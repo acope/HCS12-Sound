@@ -114,7 +114,8 @@
 #define A8    107
 #define As8   101
 #define B8    95
-#define r  0
+#define r     0
+#define end_song 0xFFFF
 
 #define sixtenth    62   //0.062 seconds
 #define eigth       125  //0.125 seconds
@@ -123,41 +124,45 @@
 #define half        500  //0.5 seconds
 #define halfDot     750  //.750 seconds
 #define whole       1000 //1 second
+#define tripelet    quarter/3
 
-void JoyToTheWorld(void);
-void TetrisThemeA(void);
+void JoyToTheWorld(char playSong);
+void TetrisThemeA(char playSong);
+void TestPitch(void);
 
 int i;
 int pitch;
 int rest;
-int joytotheworldScore[59] = {
+int x;
+
+int joytotheworldScore[] = {
   C6, B5, A5, G5, F5, E5, D5, C5, G5, A5, A5, B5, B5, C6, C6, C6, //16
   C6, B5, A5, G5, G5, F5, E5, C6, C6, B5, A5, G5, G5, F5, E5, E5, //16
   E5, E5, E5, E5, F5, G5, F5, E5, D5, D5, D5, D5, E5, F5, E5, D5, //16
-  C5, C6, A5, G5, F5, E5, F5, E5, D5, C5, r                      //11
+  C5, C6, A5, G5, F5, E5, F5, E5, D5, C5, r, end_song                      //11
   
 };
-int joytotheworldDelay[59] = {
+int joytotheworldDelay[] = {
     half, quarterDot, eigth, halfDot, quarter, half, half, halfDot, quarter, halfDot, quarter, halfDot, quarter, whole, halfDot, quarter,
     quarter, quarter, quarter, quarter, quarterDot, eigth, quarter, quarter, quarter, quarter, quarter, quarter, quarterDot, eigth, quarter, quarter,
     quarter, quarter, quarter, eigth, eigth, halfDot, eigth, eigth, quarter, quarter, quarter, eigth, eigth, halfDot, eigth, eigth,
-    quarter, half, quarter, quarterDot, eigth, quarter, quarter, half, half, whole, half
+    quarter, half, quarter, quarterDot, eigth, quarter, quarter, half, half, whole, half, end_song
 };
 
 
-int tetrisScore[98]={
-  E6,B5,C6,D6,E6,D6,C6,B5,A5,A5,C6,E6,B6,C6,B5,C6,D6,E6,C6,A5,A5,r,D6,F6,A6,G6,F6, //27 NOTES
-  E6,C6,E6,D6,C6,B5,B5,C6,D6,E6,C6,A5,A5,r,//REPEAT!                                //14 NOTES
-  E6,B5,C6,D6,E6,D6,C6,B5,A5,A5,C6,E6,B6,C6,B5,C6,D6,E6,C6,A5,A5,r,D6,F6,A6,G6,F6, //27 NOTES
-  E6,C6,E6,D6,C6,B5,B5,C6,D6,E6,C6,A5,A5,rest,E5,C5,D5,B4,                            //18 NOTES
-  C5,A4,Gs4,B4,E5,C5,D5,B4,C5,E5,A5,Gs5                                               //12 NOTES
+int tetrisScore[]={
+  E6, B5, C6, D6, E6, D6, C6, B5, A5, A5, C6, E6, D6, C6, B5, C6, D6, E6, C6, A5, A5, r, D6, F6, A6, G6, F6, //27 NOTES
+  E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r,//REPEAT!                                //14 NOTES
+  E6, B5, C6, D6, E6, D6, C6, B5, A5, A5, C6, E6, D6, C6, B5, C6, D6, E6, C6, A5, A5, r, D6, F6, A6, G6, F6, //27 NOTES
+  E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r, E5, C5, D5, B4,                            //18 NOTES
+  C5, A4, Gs4, B4, E5, C5, D5, B4, C5, E5, end_song                                               //12 NOTES
 };
-int tetrisDelay[98]={
+int tetrisDelay[]={
   quarter,eigth,eigth,eigth,sixtenth,sixtenth,eigth,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarterDot,eigth,quarter,quarter,quarter,quarter,half,eigth,quarter,eigth,quarter,eigth,eigth,
   quarterDot,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarter,quarter,quarter,quarter,quarter, //REPEAT
   quarter,eigth,eigth,eigth,sixtenth,sixtenth,eigth,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarterDot,eigth,quarter,quarter,quarter,quarter,half,eigth,quarter,eigth,quarter,eigth,eigth,
   quarterDot,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarter,quarter,quarter,quarter,quarter,half,half,half,half,
-  half,half,half,half,half,half,half,half,quarter,quarter,half,whole
+  half,half,half,half,half,half,half,half,quarter,quarter,half, whole, end_song
 };
 
 
@@ -168,34 +173,56 @@ void interrupt 13 handler(){
 
 void main(void) {
   PLL_init();
-
   
-  while(1){
-    TetrisThemeA();
-
+  for(;;){
+    //JoyToTheWorld(char playSong);
+    //TestPitch();
+    x = 0x01;
+    
+    TetrisThemeA(x);
   } 
 }
 
 
-void JoyToTheWorld(){
-      
-    for(i=0; i<59; i++){
-      pitch = joytotheworldScore[i];
-      rest = joytotheworldDelay[i] * 2;
-      sound_init();
-      sound_on();
-      ms_delay(rest);
-    }
+void JoyToTheWorld(char playSong){
+     i=0; 
+     
+     while(playSong == 0x01){      
+      while(i != end_song){
+        pitch = joytotheworldScore[i];
+        rest = joytotheworldDelay[i] /4;
+        sound_init();
+        sound_on();
+        ms_delay(rest);
+        i++;
+      }
+     }
 }
 
-void TetrisThemeA(){
-      
-    for(i=0; i<98; i++){
+void TetrisThemeA(char playSong){
+    i = 0;
+    
+    while(playSong == 0x01 ){      
+     while(i != end_song){
       pitch = tetrisScore[i];
-      rest = tetrisDelay[i] / 4;
+      rest = tetrisDelay[i] * 2;
       sound_init();
       sound_on();
       ms_delay(rest);
+      i++;   
+     }      
     }
 } 
+
+
+void TestPitch(){
+ 
+ for(;;){
+  
+ pitch = 0xFFFF;
+ sound_init();
+ sound_on();
+ ms_delay(quarter);
+ }
+}
   
