@@ -5,7 +5,7 @@
 #include "main_asm.h" /* interface to the assembly module */
 
 
-
+//DEFINE NOTE PITCH
 #define C0    45827   //Unaudiable on Board speaker
 #define Cs0   43256
 #define D0    40829
@@ -117,23 +117,42 @@
 #define r     0
 #define end_song 0xFFFF
 
-#define sixtenth    62   //0.062 seconds
-#define eigth       125  //0.125 seconds
-#define quarter     250  //0.25 seconds
-#define quarterDot  375  //0.375 seconds
-#define half        500  //0.5 seconds
-#define halfDot     750  //.750 seconds
-#define whole       1000 //1 second
-#define tripelet    quarter/3
+
+
+//DEFINE NOTE REST
+#define sixtenth    62          //0.062 seconds
+#define eigth       125         //0.125 seconds
+#define eigthDot    187         //0.187 seconds
+#define quarter     250         //0.25  seconds
+#define quarterDot  375         //0.375 seconds
+#define half        500         //0.5   seconds
+#define halfDot     750         //0.750 seconds
+#define whole       1000        //1.00  second
+#define tripeletQ   quarter/3   //83.33 seconds
+#define tripeletS   sixtenth/3  //20.67 seconds
+#define tripeletE   eigth/3
+#define tieEigthHalf eigth+half
+#define tieTripletEHalf tripeletE+half
+#define playTestPitch 0x01
+#define playJoy 0x02
+#define playTetris 0x03
+#define playPokemon 0x04
+#define playIndianaJones 0x05
+
 
 void JoyToTheWorld(char playSong);
 void TetrisThemeA(char playSong);
-void TestPitch(void);
+void PokemonTitle(char playSong);
+void IndianaJones(char playSong);
+void TestPitch(char playSong);
 
 int i;
 int pitch;
 int rest;
-int x;
+
+/*********************************************************************/
+/**********************JOY TO THE WORLD*******************************/
+/*********************************************************************/
 
 int joytotheworldScore[] = {
   C6, B5, A5, G5, F5, E5, D5, C5, G5, A5, A5, B5, B5, C6, C6, C6, //16
@@ -150,6 +169,9 @@ int joytotheworldDelay[] = {
 };
 
 
+/*********************************************************************/
+/************************TETRIS THEME A*******************************/
+/*********************************************************************/
 int tetrisScore[]={
   E6, B5, C6, D6, E6, D6, C6, B5, A5, A5, C6, E6, D6, C6, B5, C6, D6, E6, C6, A5, A5, r, D6, F6, A6, G6, F6, //27 NOTES
   E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r,//REPEAT!                                //14 NOTES
@@ -165,6 +187,54 @@ int tetrisDelay[]={
   half,half,half,half,half,half,half,half,quarter,quarter,half, whole, end_song
 };
 
+/*********************************************************************/
+/**********************POKEMON TITLE THEME****************************/
+/*********************************************************************/
+int pokemontitleScore[]={
+  G4, B4, D5, Fs6, G5, G5, r, G5, G5, G5, G5, G5, F5, F5, F5, F5, F5, Fs5, G5, B5, D6, C5, F5, F6, F6, E6, Ds6,
+  D6, F5, E5, Ds6, D5, C5, B4, C5, G5, B5, D6, C5, C6, B5, C6, D6, F5, E5, C5, D5, D5, B4, C5, D5,
+  G5, B5, D6, C5, F5, F6, F6, E6, Ds6, D6, F5, E5, Ds5, D5, C5, B4, C5, G5, B5, D6,
+  C5, C5, F6, E6, F6, G6, As6, G6, G5, A5, A6, As6, F6, F6, F5, As6, B6, C7, G6, G6,
+  G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6, 
+  G5, B5, D6, C5, F5, F6, F6, E6, Ds6,
+  D6, F5, E5, Ds6, D5, C5, B4, C5, G5, B5, D6, C5, C6, B5, C6, D6, F5, E5, C5, D5, D5, B4, C5, D5,
+  G5, B5, D6, C5, F5, F6, F6, E6, Ds6, D6, F5, E5, Ds5, D5, C5, B4, C5, G5, B5, D6,
+  C5, C5, F6, E6, F6, G6, As6, G6, G5, A5, A6, As6, F6, F6, F5, As6, B6, C7, G6, G6,
+  G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6,end_song
+};
+
+int pokemontitleDelay[]={
+  sixtenth, sixtenth, sixtenth, sixtenth, quarter, quarter, eigth, sixtenth, sixtenth, quarter, quarter, quarter, tripeletE, tripeletE, tripeletE, tripeletE, tripeletE, tripeletE, quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, 
+  half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, half, tripeletQ, tripeletQ, tripeletQ, half, tripeletQ, tripeletQ, tripeletQ, half, eigth, eigth, eigth, eigth,
+  quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half,
+  quarterDot, eigth, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, quarterDot, eigth, half, quarterDot, eigth, half, half, quarter, quarter, quarterDot, eigth, half,
+  half, quarter, quarter, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ,
+  quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, 
+  half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, half, tripeletQ, tripeletQ, tripeletQ, half, tripeletQ, tripeletQ, tripeletQ, half, eigth, eigth, eigth, eigth,
+  quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half,
+  quarterDot, eigth, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, quarterDot, eigth, half, quarterDot, eigth, half, half, quarter, quarter, quarterDot, eigth, half,
+  half, quarter, quarter, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ,end_song  
+};
+
+ int indianajonesScore[]={
+   E5, F5, G5, C6, D5, E5, F5, G5, A5, B5, F6, A5, B5,
+   C6, D6, E6, E5, F5, G5, C6, D6, E6, F6, G5, G5, E6, D6, E6, D6, G5,E5, D6, G5, 
+   E6, D6, E5, F5,//REPEAT 1
+   G5, C6, D5, E5, F5, G5, A5, B5, F6, A5, B5,
+   C6, D6, E6, E5, F5, G5, C6, D6, E6, F6, G5, G5, E6, D6, E6, D6, G5,
+   E6, D6, G5, E6, D6, E5, G5, F5, D5, F5, E5, G5, E6, E5, G5, 
+   F5, D5, F5, E5, G5, E6, D6, E6, F6, D6, F6, Ds6, D6, C6, end_song  
+ };
+ 
+ int indianajonesDelay[]={
+   eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth,
+   quarter, quarter, quarter, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, quarter, eigthDot, sixtenth, quarter, eigthDot, sixtenth,
+   quarter, eigthDot, sixtenth, eigth, eigth, eigthDot, sixtenth,
+   eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, eigth, tieTripletEHalf, eigthDot, sixtenth,
+   quarter, quarter, quarter, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, quarter, eigthDot, sixtenth, quarter, eigthDot, sixtenth,
+   quarter, eigthDot, sixtenth, eigth, eigth, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, end_song
+ }; 
+
 
 //Timer Channel 5 interrupt service routine
 void interrupt 13 handler(){
@@ -175,11 +245,13 @@ void main(void) {
   PLL_init();
   
   for(;;){
-    //JoyToTheWorld(char playSong);
-    //TestPitch();
-    x = 0x01;
-    
+
+    char x = playIndianaJones;
+    IndianaJones(x);
     TetrisThemeA(x);
+    PokemonTitle(x);
+    JoyToTheWorld(x);
+    TestPitch(x);
   } 
 }
 
@@ -187,7 +259,8 @@ void main(void) {
 void JoyToTheWorld(char playSong){
      i=0; 
      
-     while(playSong == 0x01){      
+     while(playSong == playJoy){
+      
       while(i != end_song){
         pitch = joytotheworldScore[i];
         rest = joytotheworldDelay[i] /4;
@@ -202,7 +275,8 @@ void JoyToTheWorld(char playSong){
 void TetrisThemeA(char playSong){
     i = 0;
     
-    while(playSong == 0x01 ){      
+    while(playSong == playTetris){
+      
      while(i != end_song){
       pitch = tetrisScore[i];
       rest = tetrisDelay[i] * 2;
@@ -214,15 +288,107 @@ void TetrisThemeA(char playSong){
     }
 } 
 
+void PokemonTitle(char playSong){
+    i = 0;
+    
+    while(playSong == playPokemon){
+      
+     while(i != end_song){
+      pitch = pokemontitleScore[i];
+      rest = pokemontitleDelay[i] * 2;
+      sound_init();
+      sound_on();
+      ms_delay(rest);
+      i++;   
+     }      
+    }
+} 
 
-void TestPitch(){
- 
- for(;;){
+void IndianaJones(char playSong){
+    i = 0;
+    
+    while(playSong == playIndianaJones){      
+     while(i != end_song){
+      pitch = indianajonesScore[i];
+      rest = indianajonesDelay[i] * 2;
+      sound_init();
+      sound_on();
+      ms_delay(rest);
+      i++;   
+     }      
+    }
+}
+
+
+
+
+/*******************************************************/
+/****USED FOR TESTING PITCHES FOR SPEAKER AUDIBILITY****/
+/*******************************************************/
+void TestPitch(char playSong){
   
+ 
+ while(playSong == playTestPitch){ 
  pitch = 0xFFFF;
  sound_init();
  sound_on();
  ms_delay(quarter);
  }
 }
+
+    
+/*****************************************************/
+/*             ms_delay function                     */
+/*         creates a millisecond delay               */
+/*         Input: n (in milliseconds)                */
+/*****************************************************/
+/*void ms_delay(int n){
+  int i,j;
+  for(i=0; i<n; i++){
+    for(j=0;j<6248;j++){
+    }//for
+  }//for
+}//ms_delay
+*/
+
+/*
+void sound_init(){
+  TIOS =  0xA0; //select output compares 5 & 7
+  TSCR2 = 0x04; //div by 16: 24MHz/16=1.5MHz
+  TSCR1 = 0x80; //enable timer
   
+  TC5 = TCNT;   //initialize count on TC5
+  TC7 = TCNT;   //initialize count on TC7
+  
+  OC7M |= 0x20;  //pulse train out PT5
+  OC7D |= 0x20;  //PT5 goes high on TC7 match
+  TCTL1 |= 0x08; //PT5 low on TC5 match
+  TCTL1 &= 0x04;  
+}//sound_init
+*/
+
+/*
+void sound_on(){
+  TSCR1 = 0x80;      //enable timer
+  TIE |= 0x20;       //enable TC5 interupts
+  EnableInterrupts; //enable interrupts
+}//sound_on
+*/
+
+/*
+void sound_off(){
+  DisableInterrupts;  //disable interrupts
+  TSCR1 = 0x00;       //disable timer
+  TIE &= 0x20;        //disable TC5 interrupts
+}//sound_off
+*/
+
+/*
+void tone(int pitch){
+  TC5 += pitch;
+  TC7 = TC5;      //TC7 = TC6 + pitch
+  TC7 += pitch;   //add pitch
+  TC5 = TC7;      //TC5 = TC7 + pitch
+  TFLG1 = 0xA0;   //clear both C7F and C5F
+}//tone
+*/
