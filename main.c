@@ -120,19 +120,22 @@
 
 
 //DEFINE NOTE REST
-#define sixtenth    62          //0.062 seconds
-#define eigth       125         //0.125 seconds
-#define eigthDot    187         //0.187 seconds
-#define quarter     250         //0.25  seconds
-#define quarterDot  375         //0.375 seconds
-#define half        500         //0.5   seconds
-#define halfDot     750         //0.750 seconds
-#define whole       1000        //1.00  second
-#define tripeletQ   quarter/3   //83.33 seconds
-#define tripeletS   sixtenth/3  //20.67 seconds
-#define tripeletE   eigth/3
-#define tieEigthHalf eigth+half
-#define tieTripletEHalf tripeletE+half
+#define sixtenth          62          //0.062 seconds
+#define eigth             125         //0.125 seconds
+#define eigthDot          187         //0.187 seconds
+#define quarter           250         //0.25  seconds
+#define quarterDot        375         //0.375 seconds
+#define half              500         //0.5   seconds
+#define halfDot           750         //0.750 seconds
+#define whole             1000        //1.00  second
+#define tripeletQ         quarter/3   //83.33 seconds
+#define tripeletS         sixtenth/3  //20.67 seconds
+#define tripeletE         eigth/3
+#define tieEigthQuarter   eigth+quarter
+#define tieEigthHalf      eigth+half
+#define tieTripletEHalf   tripeletE+half
+
+//Define song to play
 #define playTestPitch 0x01
 #define playJoy 0x02
 #define playTetris 0x03
@@ -146,6 +149,12 @@ void PokemonTitle(char playSong);
 void IndianaJones(char playSong);
 void TestPitch(char playSong);
 
+void xms_delay(int n);
+void xsound_init(void);
+void xsound_on(void);
+void xsound_off(void);
+void xtone(int pitch);
+
 int i;
 int pitch;
 int rest;
@@ -158,7 +167,7 @@ int joytotheworldScore[] = {
   C6, B5, A5, G5, F5, E5, D5, C5, G5, A5, A5, B5, B5, C6, C6, C6, //16
   C6, B5, A5, G5, G5, F5, E5, C6, C6, B5, A5, G5, G5, F5, E5, E5, //16
   E5, E5, E5, E5, F5, G5, F5, E5, D5, D5, D5, D5, E5, F5, E5, D5, //16
-  C5, C6, A5, G5, F5, E5, F5, E5, D5, C5, r, end_song                      //11
+  C5, C6, A5, G5, F5, E5, F5, E5, D5, C5, r, end_song             //11
   
 };
 int joytotheworldDelay[] = {
@@ -173,73 +182,122 @@ int joytotheworldDelay[] = {
 /************************TETRIS THEME A*******************************/
 /*********************************************************************/
 int tetrisScore[]={
-  E6, B5, C6, D6, E6, D6, C6, B5, A5, A5, C6, E6, D6, C6, B5, C6, D6, E6, C6, A5, A5, r, D6, F6, A6, G6, F6, //27 NOTES
-  E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r,//REPEAT!                                //14 NOTES
-  E6, B5, C6, D6, E6, D6, C6, B5, A5, A5, C6, E6, D6, C6, B5, C6, D6, E6, C6, A5, A5, r, D6, F6, A6, G6, F6, //27 NOTES
-  E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r, E5, C5, D5, B4,                            //18 NOTES
-  C5, A4, Gs4, B4, E5, C5, D5, B4, C5, E5, end_song                                               //12 NOTES
+//|              1               |           2           |       3       |     4     |        5             |
+   E6, B5, C6, D6, E6, D6, C6, B5, A5, A5, C6, E6, D6, C6, B5, C6, D6, E6, C6, A5, A5, r, D6, F6, A6, G6, F6, //27 NOTES
+//|         6        |           7       |       8     :||
+   E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r,//REPEAT, 14 NOTES
+//|             9                |          10           |       11      |     12    |          13          |  
+   E6, B5, C6, D6, E6, D6, C6, B5, A5, A5, C6, E6, D6, C6, B5, C6, D6, E6, C6, A5, A5, r, D6, F6, A6, G6, F6, //27 NOTES
+//|         14       |         15        |       16     |   17  |   18  |
+   E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r, E5, C5, D5, B4,//18 NOTES
+//|  19  |    20  |    21 |  22   |     23     |     24     |
+   C5, A4, Gs4, B4, E5, C5, D5, B4, C5, E5, A5, Gs5, end_song //13 NOTES
 };
 int tetrisDelay[]={
-  quarter,eigth,eigth,eigth,sixtenth,sixtenth,eigth,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarterDot,eigth,quarter,quarter,quarter,quarter,half,eigth,quarter,eigth,quarter,eigth,eigth,
-  quarterDot,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarter,quarter,quarter,quarter,quarter, //REPEAT
-  quarter,eigth,eigth,eigth,sixtenth,sixtenth,eigth,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarterDot,eigth,quarter,quarter,quarter,quarter,half,eigth,quarter,eigth,quarter,eigth,eigth,
-  quarterDot,eigth,quarter,eigth,eigth,quarter,eigth,eigth,quarter,quarter,quarter,quarter,quarter,half,half,half,half,
-  half,half,half,half,half,half,half,half,quarter,quarter,half, whole, end_song
+//|                             1                                |                       2                     |                 3                  |            4          |                   5                         |
+   quarter, eigth, eigth, eigth, sixtenth, sixtenth, eigth, eigth, quarter, eigth, eigth, quarter, eigth, eigth, quarterDot, eigth, quarter, quarter, quarter, quarter, half, eigth, quarter, eigth, quarter, eigth, eigth,//27 NOTES
+//|                  6                     |                    7                   |               8                 :||
+   quarterDot, eigth, quarter, eigth, eigth, quarter, eigth, eigth, quarter, quarter, quarter, quarter, quarter, quarter, //REPEAT, 14 NOTES
+//|                             9                                |                        10                   |                 11                 |            12         |                   13                        |  
+   quarter, eigth, eigth, eigth, sixtenth, sixtenth, eigth, eigth, quarter, eigth, eigth, quarter, eigth, eigth, quarterDot, eigth, quarter, quarter, quarter, quarter, half, eigth, quarter, eigth, quarter, eigth, eigth,//27 NOTES
+//|                  14                    |                    15                  |               16                  |     17    |     18    |
+   quarterDot, eigth, quarter, eigth, eigth, quarter, eigth, eigth, quarter, quarter, quarter, quarter, quarter, quarter, half, half, half, half,  //18 NOTES
+//|    19    |     20    |    21     |     22    |           23          |   24          |
+   half, half, half, half, half, half, half, half, quarter, quarter, half, whole, end_song //13 NOTES
 };
 
 /*********************************************************************/
 /**********************POKEMON TITLE THEME****************************/
 /*********************************************************************/
 int pokemontitleScore[]={
-  G4, B4, D5, Fs6, G5, G5, r, G5, G5, G5, G5, G5, F5, F5, F5, F5, F5, Fs5, G5, B5, D6, C5, F5, F6, F6, E6, Ds6,
-  D6, F5, E5, Ds6, D5, C5, B4, C5, G5, B5, D6, C5, C6, B5, C6, D6, F5, E5, C5, D5, D5, B4, C5, D5,
-  G5, B5, D6, C5, F5, F6, F6, E6, Ds6, D6, F5, E5, Ds5, D5, C5, B4, C5, G5, B5, D6,
-  C5, C5, F6, E6, F6, G6, As6, G6, G5, A5, A6, As6, F6, F6, F5, As6, B6, C7, G6, G6,
-  G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6, 
-  G5, B5, D6, C5, F5, F6, F6, E6, Ds6,
-  D6, F5, E5, Ds6, D5, C5, B4, C5, G5, B5, D6, C5, C6, B5, C6, D6, F5, E5, C5, D5, D5, B4, C5, D5,
-  G5, B5, D6, C5, F5, F6, F6, E6, Ds6, D6, F5, E5, Ds5, D5, C5, B4, C5, G5, B5, D6,
-  C5, C5, F6, E6, F6, G6, As6, G6, G5, A5, A6, As6, F6, F6, F5, As6, B6, C7, G6, G6,
-  G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6,end_song
+//|       1       |          2           |               3               ||:   4      |          5         |
+   G4, B4, D5, Fs5, G5, G5, r, G5, G5, G5, G5, G5, F5, F5, F5, F5, F5, Fs5, G5, B5, D6, C5, F5, F6, E6, Ds6,  //26 NOTES
+//|       6       |       7       |     8     |       9       |      10       |      11      |
+   D6, F5, E5, Ds6, D5, C5, B4, C5, G5, B5, D6, C5, C6, B5, C6, D6, F5, E5, C5, D5, B4, C5, D5, //23 NOTES
+//|     12   |          13            |        14      |       15      |      16   |
+   G5, B5, D6, C5, F5, F6, E6, Ds6, D6, F5, E5, Ds5, D5, C5, B4, C5, G5, B5, D6, //19 NOTES
+//|        17        |      18    |     19    |      20    |      21    |     22    |
+   C5, C5, F6, E6, F6, G6, As6, G6, G5, A5, A6, As6, F6, F6, F5, As6, B6, C7, G6, G6,//20 NOTES
+//|     23    |                 24                  |                  25            |                   26                |                27            :||
+   G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6, //43 NOTES, REPEAT BACK TO BEGINNING
+//||:   4      |          5       | 
+   G5, B5, D6, C5, F5, F6, E6, Ds6,//26 NOTES
+//|       6       |       7       |     8     |       9       |      10       |      11      |
+   D6, F5, E5, Ds6, D5, C5, B4, C5, G5, B5, D6, C5, C6, B5, C6, D6, F5, E5, C5, D5, B4, C5, D5, //23 NOTES
+//|     12   |          13            |        14      |       15      |      16   |
+   G5, B5, D6, C5, F5, F6, E6, Ds6, D6, F5, E5, Ds5, D5, C5, B4, C5, G5, B5, D6, //19 NOTES
+//|        17        |      18    |     19    |      20    |      21    |     22    |
+   C5, C5, F6, E6, F6, G6, As6, G6, G5, A5, A6, As6, F6, F6, F5, As6, B6, C7, G6, G6,//20 NOTES
+//|     23    |                 24                  |                  25            |                   26                |                27                     :||
+   G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6 ,end_song//44 NOTES
 };
 
 int pokemontitleDelay[]={
-  sixtenth, sixtenth, sixtenth, sixtenth, quarter, quarter, eigth, sixtenth, sixtenth, quarter, quarter, quarter, tripeletE, tripeletE, tripeletE, tripeletE, tripeletE, tripeletE, quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, 
-  half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, half, tripeletQ, tripeletQ, tripeletQ, half, tripeletQ, tripeletQ, tripeletQ, half, eigth, eigth, eigth, eigth,
-  quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half,
-  quarterDot, eigth, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, quarterDot, eigth, half, quarterDot, eigth, half, half, quarter, quarter, quarterDot, eigth, half,
-  half, quarter, quarter, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ,
-  quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, 
-  half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, half, tripeletQ, tripeletQ, tripeletQ, half, tripeletQ, tripeletQ, tripeletQ, half, eigth, eigth, eigth, eigth,
-  quarterDot, eigth, half, quarterDot, eigth, quarter, quarter, sixtenth, sixtenth, half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half,
-  quarterDot, eigth, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, quarterDot, eigth, half, quarterDot, eigth, half, half, quarter, quarter, quarterDot, eigth, half,
-  half, quarter, quarter, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ,end_song  
+//|                   1                  |                              2                      |                                       3                                         ||:            4           |                             5                           |
+   sixtenth, sixtenth, sixtenth, sixtenth, quarter, quarter, eigth, sixtenth, sixtenth, quarter, quarter, quarter, tripeletE, tripeletE, tripeletE, tripeletE, tripeletE, tripeletE, quarterDot, eigth, half, quarterDot, tieEigthQuarter, quarter, sixtenth, sixtenth, //26 NOTES
+//|                 6                  |                   7                  |            8           |                   9                  |                     10               |               11                 |
+   half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, half, tripeletQ, tripeletQ, tripeletQ, half, tripeletQ, tripeletQ, tripeletQ, tieEigthHalf, eigth, eigth, eigth, //23 NOTES
+//|          12           |                             13                        |                    14               |                  15                  |            16          |
+   quarterDot, eigth, half, quarterDot, eigth, tieEigthQuarter, sixtenth, sixtenth, half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, //19 NOTES
+//|                      17                          |           18           |          19            |             20         |          21           |            22          |
+   quarterDot, eigth, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, quarterDot, eigth, half, quarterDot, eigth, half, half, quarter, quarter, quarterDot, eigth, half, //20 NOTES
+//|         23           |                                                    24                                              |                                            25                                        |                                                26                                                  |                                         27                                          :||
+   half, quarter, quarter, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, //43 NOTES, REPEAT BACK TO BEGINNING
+//||:            4           |                             5                           | 
+   quarterDot, eigth, half, quarterDot, eigth, tieEigthQuarter ,sixtenth, sixtenth, 
+//|                 6                  |                   7                  |            8           |                   9                  |                     10               |               11                 |
+   half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, half, tripeletQ, tripeletQ, tripeletQ, half, tripeletQ, tripeletQ, tripeletQ, tieEigthHalf, eigth, eigth, eigth, //23 NOTES
+//|          12           |                             13                        |                    14               |                  15                  |            16          |
+   quarterDot, eigth, half, quarterDot, eigth, tieEigthQuarter, sixtenth, sixtenth, half, quarterDot, sixtenth, sixtenth, half, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, //19 NOTES
+//|                      17                          |           18           |          19            |             20         |          21           |            22          |
+   quarterDot, eigth, tripeletQ, tripeletQ, tripeletQ, quarterDot, eigth, half, quarterDot, eigth, half, quarterDot, eigth, half, half, quarter, quarter, quarterDot, eigth, half, //20 NOTES
+//|         23           |                                                    24                                              |                                            25                                        |                                                26                                                  |                                         27                                                   :||
+   half, quarter, quarter, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, eigthDot, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, eigth, sixtenth, sixtenth, tripeletQ, tripeletQ, tripeletQ, end_song //43 NOTES  
 };
 
+
+/*********************************************************************/
+/**********************INDIANA JONES THEME****************************/
+/*********************************************************************/
  int indianajonesScore[]={
-   E5, F5, G5, C6, D5, E5, F5, G5, A5, B5, F6, A5, B5,
-   C6, D6, E6, E5, F5, G5, C6, D6, E6, F6, G5, G5, E6, D6, E6, D6, G5,E5, D6, G5, 
-   E6, D6, E5, F5,//REPEAT 1
-   G5, C6, D5, E5, F5, G5, A5, B5, F6, A5, B5,
-   C6, D6, E6, E5, F5, G5, C6, D6, E6, F6, G5, G5, E6, D6, E6, D6, G5,
-   E6, D6, G5, E6, D6, E5, G5, F5, D5, F5, E5, G5, E6, E5, G5, 
-   F5, D5, F5, E5, G5, E6, D6, E6, F6, D6, F6, Ds6, D6, C6, end_song  
+//|  1   ||:     2        |     3     |      4        |
+   E5, F5, G5, C6, D5, E5, F5, G5, A5, B5, F6, A5, B5,//13 NOTES
+//|         5        |      6        |     7     |        8              |
+   C6, D6, E6, E5, F5, G5, C6, D6, E6, F6, G5, G5, E6, D6, G5, E6, D6, G5,//18 NOTES 
+//|          9              :|
+   E5, D6, G5, E6, D6, E5, F5,//7 NOTES, REPEAT 1
+//|     10       |     11    |        12     |
+   G5, C6, D5, E5, F5, G5, A5, B5, F6, A5, B5,//11 NOTES
+//|          13      |       14      |     15    |           16          |
+   C6, D6, E6, E5, F5, G5, C6, D6, E6, F6, G5, G5, E6, D6, G5, E6, D6, G5, //18 NOTES, END OF FIRST REPEAT
+//|           17             |     18    |         19        |
+   E6, D6, G5, E6, D6, E5, G5, F5, D5, F5, E5, G5, E6, E5, G5,//15 NOTES 
+//|    20    |         21        |   22      |         23           |
+   F5, D5, F5, E5, G5, E6, D6, E6, F6, D6, F6, Ds6, D6, C6, end_song//15 NOTES  
  };
  
  int indianajonesDelay[]={
-   eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth,
-   quarter, quarter, quarter, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, quarter, eigthDot, sixtenth, quarter, eigthDot, sixtenth,
-   quarter, eigthDot, sixtenth, eigth, eigth, eigthDot, sixtenth,
-   eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, eigth, tieTripletEHalf, eigthDot, sixtenth,
-   quarter, quarter, quarter, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, quarter, eigthDot, sixtenth, quarter, eigthDot, sixtenth,
-   quarter, eigthDot, sixtenth, eigth, eigth, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, end_song
+//|         1        ||:                  2                    |             3              |                    4                   |
+   eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth,//13 NOTES
+//|                  5                          |                    6                   |             7              |                          8                              |
+   quarter, quarter, quarter, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, quarter, eigthDot, sixtenth, quarter, eigthDot, sixtenth,//18 NOTES
+//|                         9                                  :|
+   quarter, eigthDot, sixtenth, eigth, eigth, eigthDot, sixtenth, //7 NOTES, REPEAT 1
+//|                        10             |                11          |                  12                    |
+   eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, //11 NOTES
+//|                     13                      |                    14                  |                  15        |                        16                               |
+   quarter, quarter, quarter, eigthDot, sixtenth, eigth, tieEigthHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, quarter, eigthDot, sixtenth, quarter, eigthDot, sixtenth,//18 NOTES, END OF FIRST REPEAT
+//|                     17                                      |             18             |                         19                               |
+   quarter, eigthDot, sixtenth, eigth, eigth, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, eigthDot, sixtenth, //15 NOTES
+//|             20            |                         21                               |               22           |                   23                          |
+   halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, eigthDot, sixtenth, halfDot, eigthDot, sixtenth, tripeletE, tripeletE, tieTripletEHalf, end_song //15 NOTES
  }; 
 
 
 //Timer Channel 5 interrupt service routine
 void interrupt 13 handler(){
  tone(pitch);
-}
+}//interrupt 13
 
 void main(void) {
   PLL_init();
@@ -247,13 +305,14 @@ void main(void) {
   for(;;){
 
     char x = playIndianaJones;
+    
     IndianaJones(x);
     TetrisThemeA(x);
     PokemonTitle(x);
     JoyToTheWorld(x);
     TestPitch(x);
   } 
-}
+}//main
 
 
 void JoyToTheWorld(char playSong){
@@ -270,7 +329,7 @@ void JoyToTheWorld(char playSong){
         i++;
       }
      }
-}
+}//JoyToTheWorld
 
 void TetrisThemeA(char playSong){
     i = 0;
@@ -286,7 +345,7 @@ void TetrisThemeA(char playSong){
       i++;   
      }      
     }
-} 
+}//TetrisThemeA 
 
 void PokemonTitle(char playSong){
     i = 0;
@@ -302,7 +361,7 @@ void PokemonTitle(char playSong){
       i++;   
      }      
     }
-} 
+}//PokemonTitle 
 
 void IndianaJones(char playSong){
     i = 0;
@@ -317,7 +376,7 @@ void IndianaJones(char playSong){
       i++;   
      }      
     }
-}
+}//IndianaJones
 
 
 
@@ -334,7 +393,7 @@ void TestPitch(char playSong){
  sound_on();
  ms_delay(quarter);
  }
-}
+}//TestPitch
 
     
 /*****************************************************/
@@ -342,21 +401,21 @@ void TestPitch(char playSong){
 /*         creates a millisecond delay               */
 /*         Input: n (in milliseconds)                */
 /*****************************************************/
-/*void ms_delay(int n){
+void xms_delay(int n){
   int i,j;
   for(i=0; i<n; i++){
     for(j=0;j<6248;j++){
     }//for
   }//for
 }//ms_delay
-*/
 
-/*
-void sound_init(){
-  TIOS =  0xA0; //select output compares 5 & 7
-  TSCR2 = 0x04; //div by 16: 24MHz/16=1.5MHz
-  TSCR1 = 0x80; //enable timer
-  
+
+
+void xsound_init(){
+  TIOS =  0xA0; //select output compares 5 & 7                               
+  TSCR2 = 0x04; //div by 16: 24MHz/16=1.5MHz                                 
+  TSCR1 = 0x80; //enable timer                                               
+                                                                             
   TC5 = TCNT;   //initialize count on TC5
   TC7 = TCNT;   //initialize count on TC7
   
@@ -365,30 +424,30 @@ void sound_init(){
   TCTL1 |= 0x08; //PT5 low on TC5 match
   TCTL1 &= 0x04;  
 }//sound_init
-*/
 
-/*
-void sound_on(){
+
+
+void xsound_on(){
   TSCR1 = 0x80;      //enable timer
   TIE |= 0x20;       //enable TC5 interupts
   EnableInterrupts; //enable interrupts
 }//sound_on
-*/
 
-/*
-void sound_off(){
+
+
+void xsound_off(){
   DisableInterrupts;  //disable interrupts
   TSCR1 = 0x00;       //disable timer
   TIE &= 0x20;        //disable TC5 interrupts
 }//sound_off
-*/
 
-/*
-void tone(int pitch){
+
+
+void xtone(int pitch){
   TC5 += pitch;
   TC7 = TC5;      //TC7 = TC6 + pitch
   TC7 += pitch;   //add pitch
   TC5 = TC7;      //TC5 = TC7 + pitch
   TFLG1 = 0xA0;   //clear both C7F and C5F
 }//tone
-*/
+
