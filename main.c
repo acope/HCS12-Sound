@@ -114,8 +114,7 @@
 #define A8    107
 #define As8   101
 #define B8    95
-#define r     0
-#define end_song 0xFFFF
+#define r     0 
 
 
 
@@ -134,12 +133,13 @@
 #define tieEigthQuarter   eigth+quarter
 #define tieEigthHalf      eigth+half
 #define tieTripletEHalf   tripeletE+half
+#define end_song          half
 
 //Define song to play
-#define playTestPitch 0x01
-#define playJoy 0x02
-#define playTetris 0x03
-#define playPokemon 0x04
+#define playTestPitch    0x01
+#define playJoy          0x02
+#define playTetris       0x03
+#define playPokemon      0x04
 #define playIndianaJones 0x05
 
 
@@ -155,6 +155,7 @@ void xsound_on(void);
 void xsound_off(void);
 void xtone(int pitch);
 
+int j;
 int i;
 int pitch;
 int rest;
@@ -167,7 +168,7 @@ int joytotheworldScore[] = {
   C6, B5, A5, G5, F5, E5, D5, C5, G5, A5, A5, B5, B5, C6, C6, C6, //16
   C6, B5, A5, G5, G5, F5, E5, C6, C6, B5, A5, G5, G5, F5, E5, E5, //16
   E5, E5, E5, E5, F5, G5, F5, E5, D5, D5, D5, D5, E5, F5, E5, D5, //16
-  C5, C6, A5, G5, F5, E5, F5, E5, D5, C5, r, end_song             //11
+  C5, C6, A5, G5, F5, E5, F5, E5, D5, C5, r, r             //11
   
 };
 int joytotheworldDelay[] = {
@@ -191,7 +192,7 @@ int tetrisScore[]={
 //|         14       |         15        |       16     |   17  |   18  |
    E6, C6, E6, D6, C6, B5, B5, C6, D6, E6, C6, A5, A5, r, E5, C5, D5, B4,//18 NOTES
 //|  19  |    20  |    21 |  22   |     23     |     24     |
-   C5, A4, Gs4, B4, E5, C5, D5, B4, C5, E5, A5, Gs5, end_song //13 NOTES
+   C5, A4, Gs4, B4, E5, C5, D5, B4, C5, E5, A5, Gs5, r //13 NOTES
 };
 int tetrisDelay[]={
 //|                             1                                |                       2                     |                 3                  |            4          |                   5                         |
@@ -229,7 +230,7 @@ int pokemontitleScore[]={
 //|        17        |      18    |     19    |      20    |      21    |     22    |
    C5, C5, F6, E6, F6, G6, As6, G6, G5, A5, A6, As6, F6, F6, F5, As6, B6, C7, G6, G6,//20 NOTES
 //|     23    |                 24                  |                  25            |                   26                |                27                     :||
-   G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6 ,end_song//44 NOTES
+   G5, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, Cs7, D7, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, r, r, D6, C7, C7, B6 ,r//44 NOTES
 };
 
 int pokemontitleDelay[]={
@@ -265,7 +266,7 @@ int pokemontitleDelay[]={
 //|         5        |      6        |     7     |        8              |
    C6, D6, E6, E5, F5, G5, C6, D6, E6, F6, G5, G5, E6, D6, G5, E6, D6, G5,//18 NOTES 
 //|          9              :|
-   E5, D6, G5, E6, D6, E5, F5,//7 NOTES, REPEAT 1
+   E6, D6, G5, E6, D6, E5, F5,//7 NOTES, REPEAT 1
 //|     10       |     11    |        12     |
    G5, C6, D5, E5, F5, G5, A5, B5, F6, A5, B5,//11 NOTES
 //|          13      |       14      |     15    |           16          |
@@ -273,7 +274,7 @@ int pokemontitleDelay[]={
 //|           17             |     18    |         19        |
    E6, D6, G5, E6, D6, E5, G5, F5, D5, F5, E5, G5, E6, E5, G5,//15 NOTES 
 //|    20    |         21        |   22      |         23           |
-   F5, D5, F5, E5, G5, E6, D6, E6, F6, D6, F6, Ds6, D6, C6, end_song//15 NOTES  
+   F5, D5, F5, E5, G5, E6, D6, E6, F6, D6, F6, Ds6, D6, C6, r//15 NOTES  
  };
  
  int indianajonesDelay[]={
@@ -301,10 +302,11 @@ void interrupt 13 handler(){
 
 void main(void) {
   PLL_init();
+  lcd_init();
   
   for(;;){
-
-    char x = playIndianaJones;
+  
+    char x = playTetris;
     
     IndianaJones(x);
     TetrisThemeA(x);
@@ -318,67 +320,72 @@ void main(void) {
 void JoyToTheWorld(char playSong){
      i=0; 
      
-     while(playSong == playJoy){
-      
-      while(i != end_song){
+     while(playSong == playJoy){  
+      if(i < 59){
         pitch = joytotheworldScore[i];
         rest = joytotheworldDelay[i] /4;
         sound_init();
         sound_on();
         ms_delay(rest);
         i++;
-      }
+      }else{
+       i=0;
+     }//else
      }
 }//JoyToTheWorld
 
 void TetrisThemeA(char playSong){
     i = 0;
     
-    while(playSong == playTetris){
-      
-     while(i != end_song){
+    while(playSong == playTetris){      
+     if(i < 99){
       pitch = tetrisScore[i];
       rest = tetrisDelay[i] * 2;
       sound_init();
       sound_on();
       ms_delay(rest);
       i++;   
-     }      
+     }else{
+       i=0;
+     }//else      
     }
 }//TetrisThemeA 
 
 void PokemonTitle(char playSong){
     i = 0;
     
-    while(playSong == playPokemon){
-      
-     while(i != end_song){
+    while(playSong == playPokemon){     
+     if(i < 245){
       pitch = pokemontitleScore[i];
       rest = pokemontitleDelay[i] * 2;
       sound_init();
       sound_on();
       ms_delay(rest);
       i++;   
-     }      
+     }else{
+       i=0;
+     }//else      
     }
 }//PokemonTitle 
 
 void IndianaJones(char playSong){
     i = 0;
-    
+        
     while(playSong == playIndianaJones){      
-     while(i != end_song){
+     if(i < 97){
       pitch = indianajonesScore[i];
       rest = indianajonesDelay[i] * 2;
       sound_init();
-      sound_on();
+      sound_on(); 
       ms_delay(rest);
-      i++;   
-     }      
-    }
+      i++;
+     }else{
+       i=0;
+     }//else     
+
+    }//while 
+              
 }//IndianaJones
-
-
 
 
 /*******************************************************/
@@ -386,7 +393,6 @@ void IndianaJones(char playSong){
 /*******************************************************/
 void TestPitch(char playSong){
   
- 
  while(playSong == playTestPitch){ 
  pitch = 0xFFFF;
  sound_init();
@@ -413,7 +419,7 @@ void xms_delay(int n){
 
 void xsound_init(){
   TIOS =  0xA0; //select output compares 5 & 7                               
-  TSCR2 = 0x04; //div by 16: 24MHz/16=1.5MHz                                 
+  TSCR2 = 0x04; //div by 16: 24MHz/16=1.5MHz, timer prescale                                 
   TSCR1 = 0x80; //enable timer                                               
                                                                              
   TC5 = TCNT;   //initialize count on TC5
