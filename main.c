@@ -119,21 +119,21 @@
 
 
 //DEFINE NOTE REST
-#define sixtenth          62          //0.062 seconds
-#define eigth             125         //0.125 seconds
-#define eigthDot          187         //0.187 seconds
-#define quarter           250         //0.25  seconds
-#define quarterDot        375         //0.375 seconds
-#define half              500         //0.5   seconds
-#define halfDot           750         //0.750 seconds
-#define whole             1000        //1.00  second
-#define tripeletQ         quarter/3   //83.33 seconds
-#define tripeletS         sixtenth/3  //20.67 seconds
-#define tripeletE         eigth/3
-#define tieEigthQuarter   eigth+quarter
-#define tieEigthHalf      eigth+half
-#define tieTripletEHalf   tripeletE+half
-#define end_song          half
+#define sixtenth          62             //0.06  seconds
+#define eigth             125            //0.12  seconds
+#define eigthDot          187            //0.19  seconds
+#define quarter           250            //0.25  seconds
+#define quarterDot        375            //0.37  seconds
+#define half              500            //0.50  seconds
+#define halfDot           750            //0.75  seconds
+#define whole             1000           //1.00  second
+#define tripeletQ         quarter/3      //0.08  seconds
+#define tripeletS         sixtenth/3     //0.02  seconds
+#define tripeletE         eigth/3        //0.04  seconds
+#define tieEigthQuarter   eigth+quarter  //0.37  seconds
+#define tieEigthHalf      eigth+half     //0.62  seconds
+#define tieTripletEHalf   tripeletE+half //0.54  seconds
+#define end_song          half           //end song, quiet for 0.5 seconds
 
 //Define song to play
 #define playTestPitch    0x01
@@ -149,16 +149,24 @@ void PokemonTitle(char playSong);
 void IndianaJones(char playSong);
 void TestPitch(char playSong);
 
+void SetClk24(void);
 void xms_delay(int n);
 void xsound_init(void);
 void xsound_on(void);
 void xsound_off(void);
 void xtone(int pitch);
 
+//variables used for RTI
+int restValue;
 int j;
+volatile int noteValue;
+volatile int *noteP; //note pointer
+volatile int *restP; //rest pointer
+
+//other variables
 int i;
-int pitch;
-int rest;
+volatile int pitch;
+volatile int rest;
 
 /*********************************************************************/
 /**********************JOY TO THE WORLD*******************************/
@@ -297,16 +305,44 @@ int pokemontitleDelay[]={
 
 //Timer Channel 5 interrupt service routine
 void interrupt 13 handler(){
- tone(pitch);
+ xtone(noteValue);
 }//interrupt 13
 
+
+//RTI Interrupt service routine
+//RTI acts as a ms_delay
+void interrupt 7 RTI_ISR(){        
+  CRGFLG= 0x80;   //clear real-time interrupt flag!!!    
+     
+  if(--restValue == 0){
+   noteValue = *(noteP+j);
+   restValue = *(restP+j);
+   //xsound_on();
+   j++;
+  } 
+  //restValue--; //decrease rest time 
+}//interrupt 7
+
 void main(void) {
-  PLL_init();
-  lcd_init();
+  SetClk24(); //Initialize PLL
+  
+  //Timer Interrupt Initialization
+  sound_init();
+  
+   //RTI initializations
+  RTICTL = 0x59;  //kick in every 20ms(lowest value rest is .02s = 20ms)
+  CRGINT = 0x80;  //enable Real Time Interrupts (RTI)!
+  CRGFLG = 0x80;  //make sure it is cleared at the beginning
+  
+  j=0;
+  restValue=0;
+  noteValue=0;
+  *noteP=0;
+  *restP=0;
   
   for(;;){
   
-    char x = playTetris;
+    char x = playPokemon;
     
     IndianaJones(x);
     TetrisThemeA(x);
@@ -323,15 +359,14 @@ void JoyToTheWorld(char playSong){
      while(playSong == playJoy){  
       if(i < 59){
         pitch = joytotheworldScore[i];
-        rest = joytotheworldDelay[i] /4;
-        sound_init();
+        rest = joytotheworldDelay[i] ;
         sound_on();
         ms_delay(rest);
         i++;
       }else{
        i=0;
      }//else
-     }
+     }//while
 }//JoyToTheWorld
 
 void TetrisThemeA(char playSong){
@@ -339,16 +374,16 @@ void TetrisThemeA(char playSong){
     
     while(playSong == playTetris){      
      if(i < 99){
-      pitch = tetrisScore[i];
-      rest = tetrisDelay[i] * 2;
-      sound_init();
-      sound_on();
-      ms_delay(rest);
+      pitch = tetrisScore[i] / 2;
+      rest = tetrisDelay[i] / 2;      
+      *noteP = pitch; //make the note pointer = to pitch
+      *restP = rest;  //rest pointer is now = to rest
+      xsound_on();
       i++;   
      }else{
        i=0;
      }//else      
-    }
+    }//while
 }//TetrisThemeA 
 
 void PokemonTitle(char playSong){
@@ -356,16 +391,15 @@ void PokemonTitle(char playSong){
     
     while(playSong == playPokemon){     
      if(i < 245){
-      pitch = pokemontitleScore[i];
-      rest = pokemontitleDelay[i] * 2;
-      sound_init();
+      pitch = pokemontitleScore[i] / 2;
+      rest = pokemontitleDelay[i];
       sound_on();
       ms_delay(rest);
       i++;   
      }else{
        i=0;
      }//else      
-    }
+    }//while
 }//PokemonTitle 
 
 void IndianaJones(char playSong){
@@ -373,9 +407,8 @@ void IndianaJones(char playSong){
         
     while(playSong == playIndianaJones){      
      if(i < 97){
-      pitch = indianajonesScore[i];
-      rest = indianajonesDelay[i] * 2;
-      sound_init();
+      pitch = indianajonesScore[i] / 2;
+      rest = indianajonesDelay[i];
       sound_on(); 
       ms_delay(rest);
       i++;
@@ -395,7 +428,6 @@ void TestPitch(char playSong){
   
  while(playSong == playTestPitch){ 
  pitch = 0xFFFF;
- sound_init();
  sound_on();
  ms_delay(quarter);
  }
@@ -450,10 +482,22 @@ void xsound_off(){
 
 
 void xtone(int pitch){
+  
+  
   TC5 += pitch;
   TC7 = TC5;      //TC7 = TC6 + pitch
-  TC7 += pitch;   //add pitch
-  TC5 = TC7;      //TC5 = TC7 + pitch
+  pitch += TC7;   //add pitch
+  TC5 = pitch;      //TC5 = TC7 + pitch
   TFLG1 = 0xA0;   //clear both C7F and C5F
 }//tone
 
+
+void SetClk24(void) //Set the clock speed to 24Mhz
+{
+   CLKSEL &= 0x7F;
+   PLLCTL |= 0x40;
+   SYNR = 0x02;
+   REFDV = 0x01;
+   while(!(0x08 & CRGFLG)); //Wait for tracking to lock in
+   CLKSEL |= 0x80;
+}
