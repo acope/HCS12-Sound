@@ -305,7 +305,7 @@ int pokemontitleDelay[]={
 
 //Timer Channel 5 interrupt service routine
 void interrupt 13 handler(){
- xtone(noteValue);
+ xtone(pitch);
 }//interrupt 13
 
 
