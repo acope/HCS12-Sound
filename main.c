@@ -1,8 +1,6 @@
 #include <hidef.h>      /* common defines and macros */
-#include <mc9s12dg256.h>
-#pragma LINK_INFO DERIVATIVE "mc9s12dg256b"
+#include "derivative.h"
 
-#include "main_asm.h" /* interface to the assembly module */
 
 
 //DEFINE NOTE PITCH
@@ -149,12 +147,20 @@ void PokemonTitle(char playSong);
 void IndianaJones(char playSong);
 void TestPitch(char playSong);
 
+<<<<<<< HEAD
 void SetClk24(void);
 void xms_delay(int n);
 void xsound_init(void);
 void xsound_on(void);
 void xsound_off(void);
 void xtone(int pitch);
+=======
+void ms_delay(int n);
+void sound_init(void);
+void sound_on(void);
+void sound_off(void);
+void tone(int pitch);
+>>>>>>> origin/master
 
 //variables used for RTI
 int restValue;
@@ -303,8 +309,21 @@ int pokemontitleDelay[]={
  }; 
 
 
+void SetClk24(void) //Set the clock speed to 24Mhz
+{
+   CLKSEL &= 0x7F;
+   PLLCTL |= 0x40;
+   SYNR = 0x02;
+   REFDV = 0x01;
+   while(!(0x08 & CRGFLG)); //Wait for tracking to lock in
+   CLKSEL |= 0x80;
+}
+
+ #pragma CODE_SEG NON_BANKED
+ 
 //Timer Channel 5 interrupt service routine
 void interrupt 13 handler(){
+<<<<<<< HEAD
  xtone(pitch);
 }//interrupt 13
 
@@ -343,6 +362,21 @@ void main(void) {
   for(;;){
   
     char x = playPokemon;
+=======
+
+ tone(pitch);
+ 
+}//interrupt 13
+
+#pragma CODE_SEG DEFAULT 
+void main(void) {
+  SetClk24();
+
+  
+  for(;;){
+  
+    char x = playIndianaJones;
+>>>>>>> origin/master
     
     IndianaJones(x);
     TetrisThemeA(x);
@@ -355,6 +389,7 @@ void main(void) {
 
 void JoyToTheWorld(char playSong){
      i=0; 
+     
      
      while(playSong == playJoy){  
       if(i < 59){
@@ -404,12 +439,20 @@ void PokemonTitle(char playSong){
 
 void IndianaJones(char playSong){
     i = 0;
-        
+    sound_init();
+    sound_on();
+          
     while(playSong == playIndianaJones){      
      if(i < 97){
+<<<<<<< HEAD
       pitch = indianajonesScore[i] / 2;
       rest = indianajonesDelay[i];
       sound_on(); 
+=======
+      pitch = indianajonesScore[i];
+      rest = indianajonesDelay[i] * 2;
+       
+>>>>>>> origin/master
       ms_delay(rest);
       i++;
      }else{
@@ -439,7 +482,7 @@ void TestPitch(char playSong){
 /*         creates a millisecond delay               */
 /*         Input: n (in milliseconds)                */
 /*****************************************************/
-void xms_delay(int n){
+void ms_delay(int n){
   int i,j;
   for(i=0; i<n; i++){
     for(j=0;j<6248;j++){
@@ -449,7 +492,7 @@ void xms_delay(int n){
 
 
 
-void xsound_init(){
+void sound_init(){
   TIOS =  0xA0; //select output compares 5 & 7                               
   TSCR2 = 0x04; //div by 16: 24MHz/16=1.5MHz, timer prescale                                 
   TSCR1 = 0x80; //enable timer                                               
@@ -465,7 +508,7 @@ void xsound_init(){
 
 
 
-void xsound_on(){
+void sound_on(){
   TSCR1 = 0x80;      //enable timer
   TIE |= 0x20;       //enable TC5 interupts
   EnableInterrupts; //enable interrupts
@@ -473,7 +516,7 @@ void xsound_on(){
 
 
 
-void xsound_off(){
+void sound_off(){
   DisableInterrupts;  //disable interrupts
   TSCR1 = 0x00;       //disable timer
   TIE &= 0x20;        //disable TC5 interrupts
@@ -481,9 +524,13 @@ void xsound_off(){
 
 
 
+<<<<<<< HEAD
 void xtone(int pitch){
   
   
+=======
+void tone(int pitch){
+>>>>>>> origin/master
   TC5 += pitch;
   TC7 = TC5;      //TC7 = TC6 + pitch
   pitch += TC7;   //add pitch
